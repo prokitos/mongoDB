@@ -81,9 +81,10 @@ func RenewToken(refreshToken string) string {
 		return "wrong user in token"
 	}
 
-	// удаление всех токенов (если как то получилось много) данного пользователя из базы
+	// удаление данного токена пользователя из базы
 	var DBmodelDel models.TokenDB
 	DBmodelDel.GUID = refToken.GUID
+	DBmodelDel.RefreshToken = refreshToken
 	database.DeleteToken(DBmodelDel)
 
 	// создание нового токена
