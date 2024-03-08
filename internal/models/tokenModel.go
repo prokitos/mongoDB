@@ -1,8 +1,8 @@
 package models
 
 type TokenDB struct {
-	GUID         string
-	RefreshToken string
+	GUID         string `json:"GUID,omitempty"`
+	RefreshToken string `json:"RefreshToken,omitempty"`
 }
 
 type TokenResponser struct {

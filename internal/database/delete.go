@@ -14,7 +14,9 @@ func DeleteToken(DBmodel models.TokenDB) {
 
 	collection := client.Database("mongo").Collection("tokenJWT")
 
-	deleteResult, err := collection.DeleteOne(context.TODO(), DBmodel)
+	bdoc := jsonToInterf(DBmodel)
+
+	deleteResult, err := collection.DeleteMany(context.TODO(), bdoc)
 	if err != nil {
 		log.Fatal(err)
 	}

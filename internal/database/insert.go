@@ -13,8 +13,9 @@ func InsertToken(DBmodel models.TokenDB) {
 	defer ConnectClose(client)
 
 	collection := client.Database("mongo").Collection("tokenJWT")
+	bdoc := jsonToInterf(DBmodel)
 
-	insertManyResult, err := collection.InsertOne(context.TODO(), DBmodel)
+	insertManyResult, err := collection.InsertOne(context.TODO(), bdoc)
 	if err != nil {
 		log.Fatal(err)
 	}

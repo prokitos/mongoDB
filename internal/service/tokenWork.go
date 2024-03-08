@@ -74,8 +74,19 @@ func RenewToken(refreshToken string) string {
 	var DBmodel models.TokenDB
 	DBmodel.GUID = refToken.GUID
 	DBmodel.RefreshToken = refreshToken
-	database.DeleteToken(DBmodel)
 
+	// проверка что в базе есть такой токен, и что он принадлежит этому пользователю
+	retModel := database.SearchToken(DBmodel)
+	if retModel.RefreshToken != DBmodel.RefreshToken {
+		return "wrong user in token"
+	}
+
+	// удаление всех токенов (если как то получилось много) данного пользователя из базы
+	var DBmodelDel models.TokenDB
+	DBmodelDel.GUID = refToken.GUID
+	database.DeleteToken(DBmodelDel)
+
+	// создание нового токена
 	newAccessToken := createTokenAccess(refToken.GUID)
 
 	return newAccessToken

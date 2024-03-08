@@ -12,7 +12,7 @@ func getToken(w http.ResponseWriter, r *http.Request) {
 	// получение guid по запросу
 	GUID := r.FormValue("GUID")
 
-	// отправка guid в токен
+	// отправка guid для получения токенов
 	tokens := service.TokenGetPair(GUID)
 
 	// вывод токенов пользователю
