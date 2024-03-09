@@ -3,8 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"module/internal/models"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func InsertToken(DBmodel models.TokenDB) {
@@ -17,8 +18,10 @@ func InsertToken(DBmodel models.TokenDB) {
 
 	insertManyResult, err := collection.InsertOne(context.TODO(), bdoc)
 	if err != nil {
+		log.Error("error execute command")
 		log.Fatal(err)
 	}
+
 	fmt.Println(insertManyResult.InsertedID)
 
 }

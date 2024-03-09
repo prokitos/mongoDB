@@ -30,7 +30,7 @@ func routers() *mux.Router {
 
 	// params key = GUID
 	router.HandleFunc("/getToken", getToken).Methods(http.MethodPost)
-	// Headers key = Refresher
+	// Headers key = Refresher, Authorization
 	router.HandleFunc("/refreshToken", refreshToken).Methods(http.MethodPost)
 	// Headers key = Authorization
 	router.HandleFunc("/useToken", useToken).Methods(http.MethodPost)

@@ -3,8 +3,9 @@ package database
 import (
 	"context"
 	"fmt"
-	"log"
 	"module/internal/models"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func SearchToken(dbModel models.TokenDB) models.TokenDB {
@@ -20,6 +21,7 @@ func SearchToken(dbModel models.TokenDB) models.TokenDB {
 
 	err := collection.FindOne(context.TODO(), bdoc).Decode(&result)
 	if err != nil {
+		log.Error("error execute command. fail to paste result into variable")
 		log.Fatal(err)
 	}
 

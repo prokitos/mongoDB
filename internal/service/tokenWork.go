@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	log "github.com/sirupsen/logrus"
 )
 
 var accessKey = []byte("basic_key")
@@ -54,23 +55,34 @@ func TokenAccessValidate(bearer string) string {
 }
 
 // получить новый рефреш токен
-func RenewToken(refreshToken string) string {
+func RenewToken(refreshToken string, accessToken string) models.TokenResponser {
 
+	var result models.TokenResponser
+
+	// проверка рефреш токена
 	token, err := validateRefreshToken(refreshToken)
 	if err != nil {
+		result.RefreshToken = "refresh token unauthorized"
 		if err == jwt.ErrSignatureInvalid {
-			return "unauthorized"
+			result.RefreshToken = "refresh token sign unknown"
+			return result
 		}
-		return "unauthorized"
+		return result
 	}
 
 	if !token.Valid {
-		return "token expired"
+		result.RefreshToken = "refresh token expired"
+		return result
+	}
+
+	refToken := token.Claims.(*TokenRefreshData)
+
+	if refToken.AcceessToken != accessToken {
+		result.RefreshToken = "access token missmatch"
+		return result
 	}
 
 	// токен валиден. удаляем рефреш токен из базы, получаем новый аксес токен
-	refToken := token.Claims.(*TokenRefreshData)
-
 	var DBmodel models.TokenDB
 	DBmodel.GUID = refToken.GUID
 	DBmodel.RefreshToken = refreshToken
@@ -78,19 +90,21 @@ func RenewToken(refreshToken string) string {
 	// проверка что в базе есть такой токен, и что он принадлежит этому пользователю
 	retModel := database.SearchToken(DBmodel)
 	if retModel.RefreshToken != DBmodel.RefreshToken {
-		return "wrong user in token"
+		result.RefreshToken = "wrong user in token"
+		return result
 	}
 
-	// удаление данного токена пользователя из базы
+	// удаление всех токенов (если как-то получилось много) у данного GUID из базы (возможно не надо)
+	// !!!!!!!!!!!!!!!!!!!!!!
 	var DBmodelDel models.TokenDB
 	DBmodelDel.GUID = refToken.GUID
-	DBmodelDel.RefreshToken = refreshToken
 	database.DeleteToken(DBmodelDel)
+	// !!!!!!!!!!!!!!!!!!!!!!
 
-	// создание нового токена
-	newAccessToken := createTokenAccess(refToken.GUID)
+	// создание нового рефреш и аксес токена
+	result = TokenGetPair(refToken.GUID)
 
-	return newAccessToken
+	return result
 }
 
 // создание аксес токена. срок жизни 1 минуты для теста
@@ -108,6 +122,7 @@ func createTokenAccess(GUID string) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, tokenObj)
 	tokenString, err := token.SignedString(accessKey)
 	if err != nil {
+		log.Error("token dont signed")
 		return ""
 	}
 
@@ -131,6 +146,7 @@ func createTokenRefresh(GUID string, accessToken string) string {
 	tokenString, err := token.SignedString(refreshKey)
 
 	if err != nil {
+		log.Error("token dont signed")
 		return ""
 	}
 

@@ -2,8 +2,8 @@ package database
 
 import (
 	"encoding/json"
-	"fmt"
 
+	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -11,11 +11,11 @@ import (
 func jsonToInterf(temp interface{}) interface{} {
 
 	out, _ := json.MarshalIndent(temp, "", "  ")
-	fmt.Print(string(out))
 
 	var bdoc interface{}
 	err := bson.UnmarshalExtJSON([]byte(out), true, &bdoc)
 	if err != nil {
+		log.Error("error unmarshal json")
 		panic(err)
 	}
 
